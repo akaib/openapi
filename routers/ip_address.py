@@ -12,5 +12,20 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-def urljoin(*args):
-    return '/'.join(args)
+from fastapi import APIRouter
+from pydantic import BaseModel
+from starlette.requests import Request
+
+
+VERSION = '1.0.0'
+router = APIRouter()
+
+
+class IpAddressSchema(BaseModel):
+    ip: str
+
+
+@router.get('/', response_model=IpAddressSchema)
+async def echo_ip(request: Request):
+    return {'ip': request.client.host}
+

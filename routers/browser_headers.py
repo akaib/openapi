@@ -12,9 +12,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter
 from starlette.requests import Request
 
+VERSION = '1.0.0'
 router = APIRouter()
 
 
