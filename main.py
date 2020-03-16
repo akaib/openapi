@@ -14,13 +14,15 @@
 
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
+from starlette.middleware.cors import CORSMiddleware
+
 from routers.whale_store import router as whale_store
 from routers.browser_headers import router as browser_headers
 from routers.ip_address import router as ip_address
 
 
 NAME = 'Akaib OpenAPI'
-VERSION = '1.0.0'
+VERSION = '1.0.1'
 
 
 class CustomFastAPI(FastAPI):
@@ -34,6 +36,11 @@ class CustomFastAPI(FastAPI):
 
 
 app = CustomFastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*']
+)
 
 app.include_router(
     whale_store,
