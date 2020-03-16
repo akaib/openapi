@@ -16,6 +16,7 @@ from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
 from starlette.responses import RedirectResponse
 from starlette.middleware.cors import CORSMiddleware
+from uvicorn.middleware.proxy_headers import ProxyHeadersMiddleware
 
 from routers.whale_store import router as whale_store
 from routers.browser_headers import router as browser_headers
@@ -47,6 +48,11 @@ app = CustomFastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=['*']
+)
+
+app.add_middleware(
+    ProxyHeadersMiddleware,
+    trusted_hosts=['*']
 )
 
 app.include_router(
