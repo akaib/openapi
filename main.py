@@ -23,7 +23,7 @@ from routers.ip_address import router as ip_address
 
 
 NAME = 'Akaib OpenAPI'
-VERSION = '1.0.2'
+VERSION = '1.0.3'
 
 
 class CustomFastAPI(FastAPI):
