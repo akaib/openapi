@@ -1,4 +1,4 @@
-# Copyright 2020 Xvezda <https://xvezda.com/>
+# Copyright (C) 2020 Xvezda <xvezda@naver.com>
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,8 @@
 # limitations under the License.
 
 from fastapi import FastAPI
-from whale_store import router
+from routers.whale_store import router as whale_store
+from routers.browser_headers import router as browser_headers
 
 
 class CustomFastAPI(FastAPI):
@@ -30,8 +31,15 @@ async def read_root():
 
 
 app.include_router(
-  router,
+  whale_store,
   prefix='/whale-store',
-  tags=['whalestore']
+  tags=['whale_store']
 )
+
+app.include_router(
+  browser_headers,
+  prefix='/browser-headers',
+  tags=['browser_headers']
+)
+
 

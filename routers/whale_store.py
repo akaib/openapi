@@ -13,16 +13,35 @@
 # limitations under the License.
 
 import re
+from time import time
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from commons.cache import CacheModel, TTL
-
-
 router = APIRouter()
 
 BASE_URL = 'https://store.whale.naver.com'
+CACHE_SECONDS = 14400
+
+cache = {}
+
+
+class CacheItem(BaseModel):
+    item: dict
+    timestamp: float
+
+
+class ShieldsEndpointSchema(BaseModel):
+    schemaVersion: int = 1
+    label: str = 'whale store'
+    message: str
+    color: str = 'blue'
+    isError: bool = False
+    cacheSeconds: int = CACHE_SECONDS
+
+
+class CacheExpired(ValueError):
+    pass
 
 
 res_not_found = {
@@ -37,19 +56,6 @@ res_internal_error = {
     'color': 'critical'
 }
 
-
-cache = CacheModel()
-
-
-class ShieldsEndpointSchema(BaseModel):
-    schemaVersion: int = 1
-    label: str = 'whale store'
-    message: str
-    color: str = 'blue'
-    isError: bool = False
-    cacheSeconds: int = TTL
-
-
 @router.get(
     '/v/{item_id}',
     response_model=ShieldsEndpointSchema,
@@ -57,9 +63,13 @@ class ShieldsEndpointSchema(BaseModel):
 async def read_item(item_id: str):
     if not re.match(r'^[a-z]{32}$', item_id):
         return {'message': 'bad id', 'isError': True, 'color': 'critical'}
-
-    item = cache.get_item(item_id)
-    if not item:
+    try:
+        item_cache: CacheItem = cache[item_id]
+        if time() - item_cache.timestamp >= CACHE_SECONDS:
+            del cache[item_id]
+            raise CacheExpired('cache expired')
+        item = item_cache.item
+    except (KeyError, CacheExpired) as err:
         import httpx
         async with httpx.AsyncClient() as client:
             url = '%s/detail/%s' % (BASE_URL, item_id)
@@ -104,6 +114,6 @@ async def read_item(item_id: str):
             return res_internal_error
         version = j.get('version')
         item = {'message': 'v'+version}
-        cache.set_item(item_id, item)
+        cache[item_id] = CacheItem(item=item, timestamp=time())
     return item
 
