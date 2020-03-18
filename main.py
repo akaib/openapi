@@ -76,7 +76,7 @@ async def redirect_root():
     return RedirectResponse(app.get_prefix())
 
 
-@app.get(app.get_prefix())
+@app.get(app.get_prefix()+'/')
 async def show_oas():
     return get_openapi(title=NAME, version=VERSION, routes=app.routes)
 
